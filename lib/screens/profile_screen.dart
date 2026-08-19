@@ -29,7 +29,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 32, backgroundImage: NetworkImage(user.avatarUrl)),
+              CircleAvatar(
+                radius: 32,
+                backgroundImage: NetworkImage(user.avatarUrl),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -38,8 +41,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(user.name, style: theme.textTheme.titleMedium),
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined,
-                            size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 14,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
                         const SizedBox(width: 4),
                         Text(user.location, style: theme.textTheme.bodyMedium),
                       ],
@@ -51,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: 'Modifier',
                 isOutlined: true,
                 isSmall: true,
-                onPressed: () => context.goNamed('editProfile'),
+                onPressed: () => context.pushNamed('editProfile'),
               ),
             ],
           ),
@@ -61,7 +69,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             children: [
               _StatBlock(value: '${user.exchangesCount}', label: 'Échanges'),
-              _StatBlock(value: '${user.skillsOffered.length}', label: 'Compétences'),
+              _StatBlock(
+                value: '${user.skillsOffered.length}',
+                label: 'Compétences',
+              ),
               _StatBlock(value: user.rating.toStringAsFixed(1), label: 'Note'),
             ],
           ),
@@ -74,7 +85,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: user.skillsOffered.map((s) => SkillChip(label: s)).toList(),
+            children: user.skillsOffered
+                .map((s) => SkillChip(label: s))
+                .toList(),
           ),
           const SizedBox(height: 20),
 
@@ -83,7 +96,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: user.skillsWanted.map((s) => SkillChip(label: s)).toList(),
+            children: user.skillsWanted
+                .map((s) => SkillChip(label: s))
+                .toList(),
           ),
           const SizedBox(height: 20),
           const Divider(),
@@ -100,7 +115,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Icon(
                 Icons.circle,
                 size: 10,
-                color: user.isAvailable ? theme.colorScheme.primary : Colors.grey,
+                color: user.isAvailable
+                    ? theme.colorScheme.primary
+                    : Colors.grey,
               ),
               const SizedBox(width: 8),
               Text(
@@ -122,9 +139,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               return SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Thème sombre'),
-                subtitle: Text(ThemeController.instance.isDarkMode ? 'Activé' : 'Désactivé'),
+                subtitle: Text(
+                  ThemeController.instance.isDarkMode ? 'Activé' : 'Désactivé',
+                ),
                 value: ThemeController.instance.isDarkMode,
-                onChanged: (value) => ThemeController.instance.setDarkMode(value),
+                onChanged: (value) =>
+                    ThemeController.instance.setDarkMode(value),
               );
             },
           ),
@@ -149,11 +169,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Accueil'),
-          NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore), label: 'Explorer'),
-          NavigationDestination(icon: Icon(Icons.favorite_outline), selectedIcon: Icon(Icons.favorite), label: 'Matches'),
-          NavigationDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: 'Messages'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Accueil',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore),
+            label: 'Explorer',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.favorite_outline),
+            selectedIcon: Icon(Icons.favorite),
+            label: 'Matches',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble),
+            label: 'Messages',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profil',
+          ),
         ],
       ),
     );

@@ -77,7 +77,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           //--- Section "Pour toi" (suggestions de matches) ---
-          Text('Pour toi ✨', style: theme.textTheme.titleMedium),
+          Text('Pour toi', style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
           ...topMatches.map(
             (user) => Padding(
@@ -98,7 +98,7 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Compétences populaires 🔥',
+                'Compétences populaires',
                 style: theme.textTheme.titleMedium,
               ),
               TextButton(onPressed: () {}, child: const Text('Voir tout')),

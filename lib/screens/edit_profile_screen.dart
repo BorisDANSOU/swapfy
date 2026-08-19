@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/users.dart';
 import '../widgets/custom_button.dart';
+import 'package:go_router/go_router.dart';
 
 //Écran de formulaire pour compléter/modifier son profil.
 //StatefulWidget : indispensable avec un Form et des TextFormField,
@@ -20,7 +21,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   late final TextEditingController _nameController;
   late final TextEditingController _bioController;
-  final TextEditingController _skillsOfferedController = TextEditingController();
+  final TextEditingController _skillsOfferedController =
+      TextEditingController();
   final TextEditingController _skillsWantedController = TextEditingController();
 
   String _selectedLevel = 'Intermédiaire';
@@ -58,7 +60,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profil enregistré avec succès !')),
       );
-      Navigator.of(context).pop();
+
+      (context).pop();
     }
     //Si validate() retourne false, Flutter affiche automatiquement les
     //messages d'erreur sous les champs invalides.
@@ -153,7 +156,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               initialValue: _selectedLevel,
               decoration: const InputDecoration(labelText: 'Niveau'),
               items: ['Débutant', 'Intermédiaire', 'Expert']
-                  .map((level) => DropdownMenuItem(value: level, child: Text(level)))
+                  .map(
+                    (level) =>
+                        DropdownMenuItem(value: level, child: Text(level)),
+                  )
                   .toList(),
               onChanged: (value) {
                 if (value != null) setState(() => _selectedLevel = value);
@@ -171,7 +177,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 24),
 
-            CustomButton(label: 'Enregistrer mon profil', onPressed: _submitForm),
+            CustomButton(
+              label: 'Enregistrer mon profil',
+              onPressed: _submitForm,
+            ),
           ],
         ),
       ),
