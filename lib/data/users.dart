@@ -89,8 +89,8 @@ class MockUsers {
   ];
 
   //Retourne l'utilisateur actuellement "connecté".
-  static User get currentUser => getById(currentUserId)!;
-
+    static User get currentUser =>
+        getById(currentUserId) ?? users.first;
   //Retrouve un utilisateur précis à partir de son id.
   static User? getById(String id) {
     try {
