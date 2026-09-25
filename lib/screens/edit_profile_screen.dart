@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/users.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/remote_avatar.dart';
 import 'package:go_router/go_router.dart';
 
 //Écran de formulaire pour compléter/modifier son profil.
@@ -79,9 +80,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             Center(
-              child: CircleAvatar(
+              child: RemoteAvatar(
+                imageUrl: currentUser.avatarUrl,
+                name: currentUser.name,
                 radius: 40,
-                backgroundImage: NetworkImage(currentUser.avatarUrl),
               ),
             ),
             const SizedBox(height: 20),

@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "appTitle": "Swapfy",
+  "loginTitle": "Sign in",
+  "registerTitle": "Create an account",
+  "email": "Email",
+  "password": "Password",
+  "loginAction": "Sign in",
+  "registerAction": "Create an account",
+  "invalidEmail": "Enter a valid email",
+  "shortPassword": "Password must contain at least 6 characters",
+  "invalidCredentials": "Invalid credentials",
+  "loginFailed": "Unable to sign in",
+  "registerFailed": "Unable to create the account"
+}

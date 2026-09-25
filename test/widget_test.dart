@@ -3,6 +3,8 @@ import 'package:swapfy/app/router.dart';
 import 'package:swapfy/app/theme.dart';
 import 'package:swapfy/data/skills.dart';
 import 'package:swapfy/data/users.dart';
+import 'package:swapfy/repositories/fake/fake_auth_repository.dart';
+import 'package:swapfy/repositories/fake/fake_messages_repository.dart';
 import 'package:flutter/material.dart';
 
 //Tests de configuration de base : on vérifie que les éléments
@@ -11,7 +13,11 @@ import 'package:flutter/material.dart';
 //dépend d'images réseau non disponibles en environnement de test).
 void main() {
   test('Le router contient bien des routes configurées', () {
-    expect(AppRouter.router.configuration.routes, isNotEmpty);
+    final router = AppRouter(
+      instanceAuthRepository: FakeAuthRepository(),
+      instanceMessagesRepository: FakeMessagesRepository(),
+    );
+    expect(router.goRouter.configuration.routes, isNotEmpty);
   });
 
   test('Le theme clair est correctement configure', () {

@@ -36,7 +36,8 @@ void main() {
       final matches = MockUsers.matchesSortedByCompatibility;
       for (var i = 0; i < matches.length - 1; i++) {
         expect(
-          matches[i].compatibilityPercent >= matches[i + 1].compatibilityPercent,
+          matches[i].compatibilityPercent >=
+              matches[i + 1].compatibilityPercent,
           isTrue,
         );
       }

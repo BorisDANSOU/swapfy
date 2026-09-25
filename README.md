@@ -2,6 +2,12 @@
 
 Application mobile multi-écrans développée avec Flutter, permettant à des étudiants et jeunes apprenants d'échanger leurs compétences entre eux : "Apprends autrement, partage ce que tu sais."
 
+[![Flutter CI](https://github.com/BorisDANSOU/swapfy/actions/workflows/ci.yml/badge.svg)](https://github.com/BorisDANSOU/swapfy/actions/workflows/ci.yml)
+
+## Architecture production
+
+Swapfy sépare l'interface des sources de données avec des repositories injectables. Les implémentations Firebase Auth/Firestore servent la production et les fake repositories permettent des tests déterministes sans réseau. Les traductions FR/EN sont générées depuis `l10n/`.
+
 ## Aperçu
 
 Swapfy connecte des personnes qui souhaitent enseigner une compétence (ex: Flutter) avec d'autres qui la recherchent, en échange d'une compétence différente (ex: UI/UX Design). L'application propose un système de matching par compatibilité, une messagerie intégrée, et un profil complet.
@@ -70,6 +76,12 @@ Navigation gérée avec **GoRouter**, routes nommées avec passage de paramètre
    flutter pub get
 ```
 
+3. Pour activer Firebase :
+```bash
+   dart pub global activate flutterfire_cli
+   flutterfire configure
+```
+
 ## Lancer l'application
 
 ```bash
@@ -77,6 +89,33 @@ flutter run -d chrome
 ```
 
 *(fonctionne aussi sur émulateur Android/iOS ou appareil physique avec `flutter run`)*
+
+### Mode démonstration fake
+
+Configure d'abord Firebase pour les plateformes ciblées :
+
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure
+```
+
+Puis lance l'application avec :
+
+```bash
+flutter run -d chrome
+```
+
+L'application initialise Firebase avant `runApp` et utilise exclusivement `FirebaseAuthRepository` ainsi que `FirebaseMessagesRepository`. Sans configuration Firebase valide, elle s'arrête au démarrage au lieu de basculer silencieusement vers des données locales.
+
+## Vérification qualité
+
+```bash
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+```
+
+Le mode fake est utilisé par les tests et la CI. La génération i18n s'effectue avec `flutter gen-l10n`. Les règles Firebase et la configuration locale sont détaillées dans [docs/firebase-setup.md](docs/firebase-setup.md).
 
 ## Structure du projet
 

@@ -27,36 +27,43 @@ class SkillChip extends StatelessWidget {
     final theme = Theme.of(context);
     //Si aucune couleur n'est fournie, on utilise une couleur par défaut
     //qui change selon l'état "sélectionné" (utile pour les filtres).
-    final bg = backgroundColor ??
+    final bg =
+        backgroundColor ??
         (isSelected
             ? theme.colorScheme.primary.withValues(alpha: 0.15)
             : theme.colorScheme.surfaceContainerHighest);
-    final fg = textColor ??
+    final fg =
+        textColor ??
         (isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 15, color: fg),
-              const SizedBox(width: 5),
-            ],
-            Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: fg,
-                fontWeight: FontWeight.w600,
+    return Semantics(
+      button: onTap != null,
+      selected: isSelected,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 15, color: fg),
+                const SizedBox(width: 5),
+              ],
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: fg,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

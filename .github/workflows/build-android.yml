@@ -1,0 +1,32 @@
+name: Android Debug Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*.*.*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.0'
+          channel: stable
+          cache: true
+      - name: Restore Firebase configuration
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          test -n "$FIREBASE_OPTIONS_DART" || { echo "Missing FIREBASE_OPTIONS_DART repository secret" >&2; exit 1; }
+          test -n "$GOOGLE_SERVICES_JSON" || { echo "Missing GOOGLE_SERVICES_JSON repository secret" >&2; exit 1; }
+          printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+      - run: flutter pub get
+      - run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swapfy-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk

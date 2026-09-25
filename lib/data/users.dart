@@ -12,7 +12,8 @@ class MockUsers {
       name: 'Boris D.',
       avatarUrl: 'https://i.pravatar.cc/150?img=68',
       location: 'Lomé, Togo',
-      bio: 'Étudiant en informatique passionné par le partage de '
+      bio:
+          'Étudiant en informatique passionné par le partage de '
           'connaissances. J\'aime apprendre autant qu\'enseigner.',
       skillsOffered: ['Flutter', 'Dart', 'Python', 'Firebase', 'Git'],
       skillsWanted: ['React', 'Node.js', 'UI/UX', 'DevOps'],
@@ -25,7 +26,8 @@ class MockUsers {
       name: 'Sarah K.',
       avatarUrl: 'https://i.pravatar.cc/150?img=5',
       location: 'Lomé, Togo',
-      bio: 'Designer UI/UX passionnée, toujours partante pour un '
+      bio:
+          'Designer UI/UX passionnée, toujours partante pour un '
           'échange de compétences.',
       skillsOffered: ['UI/UX Design', 'Figma'],
       skillsWanted: ['Flutter'],
@@ -89,8 +91,7 @@ class MockUsers {
   ];
 
   //Retourne l'utilisateur actuellement "connecté".
-    static User get currentUser =>
-        getById(currentUserId) ?? users.first;
+  static User get currentUser => getById(currentUserId) ?? users.first;
   //Retrouve un utilisateur précis à partir de son id.
   static User? getById(String id) {
     try {
@@ -105,7 +106,9 @@ class MockUsers {
   //les écrans Matches et la section "Pour toi" de Home.
   static List<User> get matchesSortedByCompatibility {
     final others = users.where((user) => user.id != currentUserId).toList();
-    others.sort((a, b) => b.compatibilityPercent.compareTo(a.compatibilityPercent));
+    others.sort(
+      (a, b) => b.compatibilityPercent.compareTo(a.compatibilityPercent),
+    );
     return others;
   }
 }

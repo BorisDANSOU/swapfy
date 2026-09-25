@@ -1,3 +1,9 @@
+# Firebase and local release configuration
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+*.jks
+*.keystore
 # Miscellaneous
 *.class
 *.log
@@ -32,6 +38,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+**/node_modules/
 
 # Symbolication related
 app.*.symbols

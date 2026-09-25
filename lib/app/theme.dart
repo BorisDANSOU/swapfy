@@ -76,7 +76,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceLight,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFE4E4F0)),
@@ -107,25 +110,26 @@ class AppTheme {
         error: const Color(0xFFFF8A80),
         surface: surfaceDark,
       ),
-      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
-        headlineLarge: GoogleFonts.hankenGrotesk(
-          fontSize: 26,
-          fontWeight: FontWeight.w800,
-          color: onSurfaceDark,
-        ),
-        titleMedium: GoogleFonts.hankenGrotesk(
-          fontSize: 17,
-          fontWeight: FontWeight.w700,
-          color: onSurfaceDark,
-        ),
-        bodyLarge: GoogleFonts.inter(fontSize: 15, color: onSurfaceDark),
-        bodyMedium: GoogleFonts.inter(fontSize: 13, color: onSurfaceDark),
-        labelSmall: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: onSurfaceDark.withValues(alpha: 0.6),
-        ),
-      ),
+      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme)
+          .copyWith(
+            headlineLarge: GoogleFonts.hankenGrotesk(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: onSurfaceDark,
+            ),
+            titleMedium: GoogleFonts.hankenGrotesk(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: onSurfaceDark,
+            ),
+            bodyLarge: GoogleFonts.inter(fontSize: 15, color: onSurfaceDark),
+            bodyMedium: GoogleFonts.inter(fontSize: 13, color: onSurfaceDark),
+            labelSmall: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: onSurfaceDark.withValues(alpha: 0.6),
+            ),
+          ),
       cardTheme: CardThemeData(
         color: surfaceDark,
         elevation: 0,
@@ -134,7 +138,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceDark,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,

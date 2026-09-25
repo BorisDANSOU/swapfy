@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import 'custom_button.dart';
+import 'remote_avatar.dart';
 
 //Carte réutilisable affichant un match avec son pourcentage de
 //compatibilité en cercle de progression, ce qu'il enseigne/recherche.
@@ -23,10 +24,7 @@ class MatchCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: NetworkImage(user.avatarUrl),
-                ),
+                RemoteAvatar(imageUrl: user.avatarUrl, name: user.name),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -54,12 +52,18 @@ class MatchCard extends StatelessWidget {
                       CircularProgressIndicator(
                         value: user.compatibilityPercent / 100,
                         strokeWidth: 4,
-                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                        valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+                        backgroundColor:
+                            theme.colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation(
+                          theme.colorScheme.primary,
+                        ),
                       ),
                       Text(
                         '${user.compatibilityPercent}%',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -69,7 +73,10 @@ class MatchCard extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: CustomButton(label: 'Échanger', onPressed: onExchange ?? () {}),
+              child: CustomButton(
+                label: 'Échanger',
+                onPressed: onExchange ?? () {},
+              ),
             ),
           ],
         ),

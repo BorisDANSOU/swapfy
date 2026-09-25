@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import 'custom_button.dart';
+import 'remote_avatar.dart';
 
 //Carte réutilisable affichant un utilisateur : utilisée dans SkillDetail
 //("Personnes qui maîtrisent X") et Messages (liste de contacts).
@@ -30,9 +31,10 @@ class UserCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
+                RemoteAvatar(
+                  imageUrl: user.avatarUrl,
+                  name: user.name,
                   radius: 20,
-                  backgroundImage: NetworkImage(user.avatarUrl),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -49,11 +51,15 @@ class UserCard extends StatelessWidget {
                 //si fourni par le parent.
                 if (badgeText != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       gradient: theme.brightness == Brightness.light
                           ? const LinearGradient(
-                              colors: [Color(0xFF6C5CE7), Color(0xFF00B4D8)])
+                              colors: [Color(0xFF6C5CE7), Color(0xFF00B4D8)],
+                            )
                           : null,
                       color: theme.brightness == Brightness.dark
                           ? theme.colorScheme.primary

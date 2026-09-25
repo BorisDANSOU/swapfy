@@ -47,8 +47,11 @@ class SkillDetailScreen extends StatelessWidget {
     //Utilisateurs qui maîtrisent aussi cette compétence, en excluant
     //l'auteur (déjà mis en avant séparément).
     final peopleWhoKnow = MockUsers.users
-        .where((user) =>
-            user.skillsOffered.contains(skill.title) && user.id != skill.authorId)
+        .where(
+          (user) =>
+              user.skillsOffered.contains(skill.title) &&
+              user.id != skill.authorId,
+        )
         .toList();
 
     return Scaffold(
@@ -71,7 +74,9 @@ class SkillDetailScreen extends StatelessWidget {
 
           SkillChip(
             label: skill.category,
-            backgroundColor: theme.colorScheme.secondary.withValues(alpha: 0.15),
+            backgroundColor: theme.colorScheme.secondary.withValues(
+              alpha: 0.15,
+            ),
             textColor: theme.colorScheme.secondary,
           ),
           const SizedBox(height: 10),
@@ -79,7 +84,11 @@ class SkillDetailScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              Icon(Icons.people_outline, size: 16, color: theme.colorScheme.primary),
+              Icon(
+                Icons.people_outline,
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(width: 6),
               Text(
                 '${skill.studentsCount} personnes maîtrisent cette compétence',

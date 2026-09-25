@@ -92,8 +92,7 @@ class MockSkills {
     const Skill(
       id: '7',
       title: 'Anglais',
-      description:
-          'Progresse en anglais conversationnel et professionnel.',
+      description: 'Progresse en anglais conversationnel et professionnel.',
       category: 'Langues',
       level: SkillLevel.beginner,
       estimatedDuration: '1 mois',

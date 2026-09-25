@@ -4,6 +4,7 @@ import '../app/theme_controller.dart';
 import '../data/users.dart';
 import '../widgets/skill_chip.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/remote_avatar.dart';
 
 //Écran Profil : infos utilisateur, statistiques (échanges, compétences,
 //note), compétences maîtrisées/recherchées, et switch thème clair/sombre.
@@ -29,9 +30,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              RemoteAvatar(
+                imageUrl: user.avatarUrl,
+                name: user.name,
                 radius: 32,
-                backgroundImage: NetworkImage(user.avatarUrl),
               ),
               const SizedBox(width: 16),
               Expanded(

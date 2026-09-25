@@ -1,0 +1,45 @@
+name: Flutter CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.0'
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Restore Firebase configuration
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          test -n "$FIREBASE_OPTIONS_DART" || { echo "Missing FIREBASE_OPTIONS_DART repository secret" >&2; exit 1; }
+          test -n "$GOOGLE_SERVICES_JSON" || { echo "Missing GOOGLE_SERVICES_JSON repository secret" >&2; exit 1; }
+          printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze
+      - run: flutter test
+      - run: npm ci --prefix firestore-rules-tests
+      - run: npm test --prefix firestore-rules-tests
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          script: flutter test integration_test -d emulator-5554

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/users.dart';
 import '../models/user.dart';
+import '../widgets/remote_avatar.dart';
 
 //Écran Messages : liste des conversations, avec dernier message et
 //horodatage simulés (pas de vraie messagerie persistante, hors scope).
@@ -26,8 +27,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
   //connecté) par nom, selon le texte tapé.
   List<User> get _filteredUsers {
     final query = _searchController.text.toLowerCase();
-    final contacts =
-        MockUsers.users.where((u) => u.id != MockUsers.currentUserId).toList();
+    final contacts = MockUsers.users
+        .where((u) => u.id != MockUsers.currentUserId)
+        .toList();
     if (query.isEmpty) return contacts;
     return contacts.where((u) => u.name.toLowerCase().contains(query)).toList();
   }
@@ -75,15 +77,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 ? const Center(child: Text('Aucune conversation trouvée.'))
                 : ListView.separated(
                     itemCount: users.length,
-                    separatorBuilder: (context, index) => const Divider(height: 1),
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final user = users[index];
                       return ListTile(
                         leading: Stack(
                           children: [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundImage: NetworkImage(user.avatarUrl),
+                            RemoteAvatar(
+                              imageUrl: user.avatarUrl,
+                              name: user.name,
                             ),
                             //Point vert "en ligne" superposé en bas à
                             //droite de l'avatar, si applicable.
@@ -112,7 +115,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: Text(_fakeTimestamp(index), style: theme.textTheme.labelSmall),
+                        trailing: Text(
+                          _fakeTimestamp(index),
+                          style: theme.textTheme.labelSmall,
+                        ),
                         onTap: () => context.goNamed(
                           'conversation',
                           pathParameters: {'userId': user.id},
@@ -142,11 +148,31 @@ class _MessagesScreenState extends State<MessagesScreen> {
           }
         },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Accueil'),
-          NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore), label: 'Explorer'),
-          NavigationDestination(icon: Icon(Icons.favorite_outline), selectedIcon: Icon(Icons.favorite), label: 'Matches'),
-          NavigationDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: 'Messages'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Accueil',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore),
+            label: 'Explorer',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.favorite_outline),
+            selectedIcon: Icon(Icons.favorite),
+            label: 'Matches',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble),
+            label: 'Messages',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profil',
+          ),
         ],
       ),
     );
