@@ -30,6 +30,7 @@ jobs:
           test -n "$GOOGLE_SERVICES_JSON" || { echo "Missing GOOGLE_SERVICES_JSON repository secret" >&2; exit 1; }
           printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
           printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          - run: dart format lib/firebase_options.dart
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
