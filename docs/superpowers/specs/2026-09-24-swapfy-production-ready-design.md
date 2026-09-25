@@ -1,6 +1,6 @@
 # Swapfy Production-Ready Design
 
-**Date:** 2026-09-24
+**Date:** 2026-09-25
 
 ## Goal
 
@@ -35,7 +35,7 @@ lib/
   widgets/          # composants réutilisables accessibles
 ```
 
-Les écrans ne lisent plus directement les listes mockées. Ils consomment des interfaces de repositories injectées au niveau de l'application et remplaçables dans les tests.
+Les écrans ne lisent plus directement les listes mockées. Ils consomment des interfaces de repositories injectées au niveau de l'application et remplaçables dans les tests. Aucun nouveau framework de gestion d'état n'est ajouté : les repositories et les états asynchrones Flutter existants sont conservés.
 
 ## Data and Firebase
 
@@ -66,17 +66,21 @@ abstract interface class SkillsRepository {
 abstract interface class UsersRepository {
   Stream<User?> watchCurrentUser();
   Stream<List<User>> watchMatches();
+  Future<User?> getById(String id);
   Future<void> saveProfile(User user);
 }
 
 abstract interface class MessagesRepository {
   Stream<List<Conversation>> watchConversations();
   Stream<List<Message>> watchMessages(String conversationId);
+  Future<String> openOrCreateConversation(String otherUserId);
   Future<void> sendMessage(String conversationId, String text);
 }
 ```
 
 Chaque interface possède une implémentation Firebase et une implémentation fake en mémoire. Les erreurs réseau sont transformées en états UI explicites et ne provoquent pas de crash.
+
+L'inscription crée également `users/{uid}` avec les valeurs initiales du compte. `openOrCreateConversation` renvoie l'identifiant d'une conversation existante entre les deux participants ou crée un document avec `participantIds`, `lastMessage` et `updatedAt`. L'écran de conversation reçoit cet identifiant de conversation, et non l'identifiant du profil partenaire.
 
 ## Navigation and State
 
@@ -125,13 +129,14 @@ La suite cible au minimum :
 - 10 tests unitaires couvrant modèles, filtrage, tri, validation, contrôleurs et fake repositories ;
 - 5 tests widget couvrant authentification, navigation principale, recherche, formulaire et conversation ;
 - 2 tests d'intégration couvrant le parcours connexion -> accueil -> exploration et le parcours match -> conversation -> envoi ;
-- tests en mode fake par défaut, sans accès réseau ni secrets Firebase dans la CI.
+- tests unitaires, widget et intégration en mode fake, sans accès réseau Firebase ;
+- build Android CI configuré par secrets GitHub existants, sans secrets de signature dans les tests.
 
-Les fixtures sont déterministes et les horodatages sont injectables. Les tests d'intégration utilisent une configuration Firebase Emulator lorsqu'elle est disponible ; sinon ils utilisent le bootstrap fake documenté pour la CI publique.
+Les fixtures sont déterministes et les horodatages sont injectables. Le lancement normal de l'application reste Firebase-only et exige une configuration de plateforme valide. Les tests d'intégration utilisent le harnais fake existant.
 
 ## CI/CD and Release
 
-`.github/workflows/ci.yml` exécutera sur Windows ou Ubuntu avec une version Flutter fixée :
+`.github/workflows/ci.yml` exécute sur Ubuntu avec une version Flutter fixée :
 
 ```text
 flutter pub get
@@ -141,7 +146,7 @@ flutter test
 flutter test integration_test
 ```
 
-Les builds de démonstration sont séparés de la vérification obligatoire et nécessitent les secrets de signature uniquement dans les environnements protégés. Aucun fichier `google-services.json`, `GoogleService-Info.plist`, certificat ou secret n'est commité.
+Les tests d'intégration s'exécutent sur l'émulateur Android hébergé par GitHub Actions. Un workflow Android séparé produit et téléverse un APK debug comme artifact, sans secret de signature. Aucun certificat de signature ou clé privée n'est commité.
 
 ## Documentation and Versioning
 
@@ -168,4 +173,6 @@ La livraison est acceptée si :
 6. les seuils 10 tests unitaires, 5 widget et 2 intégration sont atteints ;
 7. les parcours principaux sont navigables au clavier/lecteur d'écran avec labels pertinents ;
 8. le README, les captures, les badges et les trois versions du changelog sont présents ;
-9. un APK de démonstration est généré si l'environnement Android et les secrets de build sont disponibles.
+9. les listes dynamiques utilisent des builders et les images réseau ont un cache borné, un placeholder stable et un fallback ;
+10. un profilage sur appareil 60 Hz documente les frames dépassant le budget de 16,7 ms pendant les parcours principaux ;
+11. le workflow Android téléverse un APK debug téléchargeable comme artifact.
