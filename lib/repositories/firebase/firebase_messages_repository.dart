@@ -19,6 +19,9 @@ class FirebaseMessagesRepository implements MessagesRepository {
       _firestore.collection('conversations');
 
   @override
+  String? get currentUserId => _auth.currentUser?.uid;
+
+  @override
   Stream<List<Conversation>> watchConversations() {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return Stream.value(const []);
@@ -45,6 +48,35 @@ class FirebaseMessagesRepository implements MessagesRepository {
               .map((doc) => Message.fromMap(_withId(doc)))
               .toList(),
         );
+  }
+
+  @override
+  Future<String> openOrCreateConversation(String otherUserId) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw StateError('A signed-in user is required.');
+    if (userId == otherUserId) {
+      throw ArgumentError.value(otherUserId, 'otherUserId');
+    }
+
+    final existing = await _conversations
+        .where('participantIds', arrayContains: userId)
+        .get();
+    for (final document in existing.docs) {
+      final participants = List<String>.from(
+        document.data()['participantIds'] as List<dynamic>? ?? const [],
+      );
+      if (participants.length == 2 && participants.contains(otherUserId)) {
+        return document.id;
+      }
+    }
+
+    final reference = _conversations.doc();
+    await reference.set({
+      'participantIds': [userId, otherUserId]..sort(),
+      'lastMessage': '',
+      'updatedAt': Timestamp.now(),
+    });
+    return reference.id;
   }
 
   @override

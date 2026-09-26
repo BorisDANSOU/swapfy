@@ -16,14 +16,16 @@ void main() {
     );
     await tester.enterText(find.byType(TextFormField).at(1), 'password');
     await tester.tap(find.byKey(const Key('login-submit')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(
-      find.text('Qu\'aimerais-tu apprendre aujourd\'hui ?'),
+      find.text('Qu\'aimeriez-vous apprendre aujourd\'hui ?'),
       findsOneWidget,
     );
     testRouter.goNamed('explore');
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
     expect(find.text('Explorer les compétences'), findsOneWidget);
   });
 }

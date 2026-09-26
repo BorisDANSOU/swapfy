@@ -1,3 +1,5 @@
+import 'skill.dart';
+
 //Modèle représentant un utilisateur de Swapfy. Sert à la fois pour
 //le profil de l'utilisateur connecté, et pour les profils des autres
 //personnes (matches, auteurs de compétences, contacts de messagerie).
@@ -14,6 +16,7 @@ class User {
   final double rating;
   final bool isOnline;
   final bool isAvailable;
+  final SkillLevel skillLevel;
 
   const User({
     required this.id,
@@ -28,6 +31,7 @@ class User {
     this.rating = 0.0,
     this.isOnline = false,
     this.isAvailable = true,
+    this.skillLevel = SkillLevel.intermediate,
   });
 
   factory User.fromMap(Map<String, dynamic> map) {
@@ -48,6 +52,9 @@ class User {
       rating: (map['rating'] as num?)?.toDouble() ?? 0,
       isOnline: map['isOnline'] as bool? ?? false,
       isAvailable: map['isAvailable'] as bool? ?? true,
+      skillLevel: SkillLevel.values.byName(
+        map['skillLevel'] as String? ?? 'intermediate',
+      ),
     );
   }
 
@@ -65,6 +72,38 @@ class User {
       'rating': rating,
       'isOnline': isOnline,
       'isAvailable': isAvailable,
+      'skillLevel': skillLevel.name,
     };
+  }
+
+  User copyWith({
+    String? name,
+    String? avatarUrl,
+    String? location,
+    String? bio,
+    List<String>? skillsOffered,
+    List<String>? skillsWanted,
+    int? compatibilityPercent,
+    int? exchangesCount,
+    double? rating,
+    bool? isOnline,
+    bool? isAvailable,
+    SkillLevel? skillLevel,
+  }) {
+    return User(
+      id: id,
+      name: name ?? this.name,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      location: location ?? this.location,
+      bio: bio ?? this.bio,
+      skillsOffered: skillsOffered ?? this.skillsOffered,
+      skillsWanted: skillsWanted ?? this.skillsWanted,
+      compatibilityPercent: compatibilityPercent ?? this.compatibilityPercent,
+      exchangesCount: exchangesCount ?? this.exchangesCount,
+      rating: rating ?? this.rating,
+      isOnline: isOnline ?? this.isOnline,
+      isAvailable: isAvailable ?? this.isAvailable,
+      skillLevel: skillLevel ?? this.skillLevel,
+    );
   }
 }

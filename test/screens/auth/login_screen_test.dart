@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:swapfy/l10n/app_localizations.dart';
 import 'package:swapfy/repositories/fake/fake_auth_repository.dart';
 import 'package:swapfy/screens/auth/login_screen.dart';
 
@@ -10,7 +12,17 @@ void main() {
     final repository = FakeAuthRepository();
 
     await tester.pumpWidget(
-      MaterialApp(home: LoginScreen(authRepository: repository)),
+      MaterialApp(
+        locale: const Locale('fr'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: LoginScreen(authRepository: repository),
+      ),
     );
     await tester.enterText(
       find.byType(TextFormField).at(0),

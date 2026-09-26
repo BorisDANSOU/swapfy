@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/users.dart';
+import '../models/conversation.dart';
 import '../models/user.dart';
+import '../l10n/app_localizations.dart';
+import '../repositories/messages_repository.dart';
+import '../repositories/users_repository.dart';
 import '../widgets/remote_avatar.dart';
 
 //Écran Messages : liste des conversations, avec dernier message et
 //horodatage simulés (pas de vraie messagerie persistante, hors scope).
 //StatefulWidget car on gère une recherche locale (comme Explore).
 class MessagesScreen extends StatefulWidget {
-  const MessagesScreen({super.key});
+  final MessagesRepository? messagesRepository;
+  final UsersRepository? usersRepository;
+
+  const MessagesScreen({
+    super.key,
+    this.messagesRepository,
+    this.usersRepository,
+  });
 
   @override
   State<MessagesScreen> createState() => _MessagesScreenState();
@@ -25,10 +36,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   //Filtre les contacts (tous les utilisateurs sauf l'utilisateur
   //connecté) par nom, selon le texte tapé.
-  List<User> get _filteredUsers {
+  List<User> _filteredUsers(List<User> users) {
     final query = _searchController.text.toLowerCase();
-    final contacts = MockUsers.users
-        .where((u) => u.id != MockUsers.currentUserId)
+    final contacts = users
+        .where((user) => user.id != MockUsers.currentUserId)
         .toList();
     if (query.isEmpty) return contacts;
     return contacts.where((u) => u.name.toLowerCase().contains(query)).toList();
@@ -52,35 +63,126 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return timestamps[index % timestamps.length];
   }
 
+  String _formatTimestamp(DateTime? date, int index) {
+    if (date == null) return _fakeTimestamp(index);
+    final localDate = date.toLocal();
+    return '${localDate.hour.toString().padLeft(2, '0')}:${localDate.minute.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final messagesRepository = widget.messagesRepository;
+    final usersRepository = widget.usersRepository;
+    if (messagesRepository != null && usersRepository != null) {
+      return StreamBuilder<List<Conversation>>(
+        stream: messagesRepository.watchConversations(),
+        builder: (context, conversationsSnapshot) {
+          final l10n = AppLocalizations.of(context)!;
+          if (conversationsSnapshot.hasError) {
+            return Scaffold(
+              body: Center(child: Text(l10n.loadConversationsFailed)),
+            );
+          }
+          if (!conversationsSnapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return StreamBuilder<List<User>>(
+            stream: usersRepository.watchMatches(),
+            builder: (context, usersSnapshot) {
+              final l10n = AppLocalizations.of(context)!;
+              if (usersSnapshot.hasError) {
+                return Scaffold(
+                  body: Center(child: Text(l10n.loadProfilesFailed)),
+                );
+              }
+              if (!usersSnapshot.hasData) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return _buildContent(
+                context,
+                users: usersSnapshot.data!,
+                conversations: conversationsSnapshot.data,
+                currentUserId: messagesRepository.currentUserId,
+              );
+            },
+          );
+        },
+      );
+    }
+    return _buildContent(context, users: MockUsers.users);
+  }
+
+  Widget _buildContent(
+    BuildContext context, {
+    required List<User> users,
+    List<Conversation>? conversations,
+    String? currentUserId,
+  }) {
     final theme = Theme.of(context);
-    final users = _filteredUsers;
+    final l10n = AppLocalizations.of(context)!;
+    final entries =
+        <({Conversation? conversation, String userId, User? user})>[];
+    if (conversations == null) {
+      entries.addAll(
+        _filteredUsers(
+          users,
+        ).map((user) => (conversation: null, userId: user.id, user: user)),
+      );
+    } else {
+      final query = _searchController.text.toLowerCase();
+      for (final conversation in conversations) {
+        final partnerIds = conversation.participantIds.where(
+          (id) => id != currentUserId,
+        );
+        if (partnerIds.isEmpty) continue;
+        final partnerId = partnerIds.first;
+        User? user;
+        for (final candidate in users) {
+          if (candidate.id == partnerId) {
+            user = candidate;
+            break;
+          }
+        }
+        if (user != null && user.name.toLowerCase().contains(query)) {
+          entries.add((
+            conversation: conversation,
+            userId: partnerId,
+            user: user,
+          ));
+        }
+      }
+    }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Messages')),
+      appBar: AppBar(title: Text(l10n.messagesTitle)),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Rechercher une conversation...',
+              decoration: InputDecoration(
+                hintText: l10n.searchConversation,
                 prefixIcon: Icon(Icons.search),
               ),
               onChanged: (value) => setState(() {}),
             ),
           ),
           Expanded(
-            child: users.isEmpty
-                ? const Center(child: Text('Aucune conversation trouvée.'))
+            child: entries.isEmpty
+                ? Center(child: Text(l10n.noConversations))
                 : ListView.separated(
-                    itemCount: users.length,
+                    itemCount: entries.length,
                     separatorBuilder: (context, index) =>
                         const Divider(height: 1),
                     itemBuilder: (context, index) {
-                      final user = users[index];
+                      final entry = entries[index];
+                      final user = entry.user;
+                      if (user == null) return const SizedBox.shrink();
                       return ListTile(
                         leading: Stack(
                           children: [
@@ -111,17 +213,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ),
                         title: Text(user.name),
                         subtitle: Text(
-                          _fakeLastMessage(index),
+                          entry.conversation == null
+                              ? _fakeLastMessage(index)
+                              : entry.conversation!.lastMessage ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: Text(
-                          _fakeTimestamp(index),
+                          _formatTimestamp(
+                            entry.conversation?.updatedAt,
+                            index,
+                          ),
                           style: theme.textTheme.labelSmall,
                         ),
                         onTap: () => context.goNamed(
                           'conversation',
-                          pathParameters: {'userId': user.id},
+                          pathParameters: {'userId': entry.userId},
                         ),
                       );
                     },
@@ -147,31 +254,31 @@ class _MessagesScreenState extends State<MessagesScreen> {
               break;
           }
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
-            label: 'Accueil',
+            label: l10n.navHome,
           ),
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
-            label: 'Explorer',
+            label: l10n.navExplore,
           ),
           NavigationDestination(
             icon: Icon(Icons.favorite_outline),
             selectedIcon: Icon(Icons.favorite),
-            label: 'Matches',
+            label: l10n.navMatches,
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
             selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Messages',
+            label: l10n.navMessages,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
-            label: 'Profil',
+            label: l10n.navProfile,
           ),
         ],
       ),

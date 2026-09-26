@@ -38,6 +38,7 @@ void main() {
       (await repository.watchCurrentUser().first)?.id,
       MockUsers.currentUserId,
     );
+    expect((await repository.getById('u1'))?.id, 'u1');
     final matches = await repository.watchMatches().first;
 
     expect(matches, isNotEmpty);
@@ -45,6 +46,23 @@ void main() {
       matches.first.compatibilityPercent,
       greaterThanOrEqualTo(matches.last.compatibilityPercent),
     );
+    repository.dispose();
+  });
+
+  test('fake user profile streams emit after a profile save', () async {
+    final repository = FakeUsersRepository();
+    final currentUser = (await repository.watchCurrentUser().first)!;
+    final updates = <String>[];
+    final subscription = repository.watchCurrentUser().listen(
+      (user) => updates.add(user!.name),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    await repository.saveProfile(currentUser.copyWith(name: 'Boris Updated'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(updates, ['Boris D.', 'Boris Updated']);
+    await subscription.cancel();
     repository.dispose();
   });
 
@@ -61,6 +79,10 @@ void main() {
     expect(messages, hasLength(1));
     expect(messages.single.text, 'Bonjour');
     expect(messages.single.senderId, MockUsers.currentUserId);
+    expect(
+      (await repository.watchConversations().first).single.lastMessage,
+      'Bonjour',
+    );
     repository.dispose();
   });
 
@@ -72,4 +94,28 @@ void main() {
     expect(await repository.watchMessages('conversation-1').first, isEmpty);
     repository.dispose();
   });
+
+  test(
+    'fake messages reuses a conversation for the same participants',
+    () async {
+      final repository = FakeMessagesRepository();
+      final emittedConversations = <List<Conversation>>[];
+      final subscription = repository.watchConversations().listen(
+        emittedConversations.add,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      final firstId = await repository.openOrCreateConversation('u1');
+      final secondId = await repository.openOrCreateConversation('u1');
+      final conversations = await repository.watchConversations().first;
+      await Future<void>.delayed(Duration.zero);
+
+      expect(secondId, firstId);
+      expect(conversations, hasLength(1));
+      expect(conversations.single.participantIds, contains('u1'));
+      expect(emittedConversations, hasLength(2));
+      await subscription.cancel();
+      repository.dispose();
+    },
+  );
 }

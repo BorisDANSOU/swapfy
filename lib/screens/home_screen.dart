@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/skills.dart';
 import '../data/users.dart';
+import '../models/skill.dart';
+import '../models/user.dart';
+import '../l10n/app_localizations.dart';
+import '../repositories/skills_repository.dart';
+import '../repositories/users_repository.dart';
 import '../widgets/skill_chip.dart';
 import '../widgets/match_card.dart';
 
@@ -9,48 +14,121 @@ import '../widgets/match_card.dart';
 //de matches ("Pour toi"), et compétences populaires.
 //StatelessWidget : n'affiche que des données mockées, sans état interne.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final SkillsRepository? skillsRepository;
+  final UsersRepository? usersRepository;
+
+  const HomeScreen({super.key, this.skillsRepository, this.usersRepository});
 
   @override
   Widget build(BuildContext context) {
+    final users = usersRepository;
+    final skills = skillsRepository;
+    if (users == null || skills == null) {
+      return _buildContent(
+        context,
+        MockUsers.currentUser,
+        MockUsers.matchesSortedByCompatibility,
+        MockSkills.skills,
+      );
+    }
+
+    return StreamBuilder<User?>(
+      stream: users.watchCurrentUser(),
+      builder: (context, userSnapshot) {
+        final l10n = AppLocalizations.of(context)!;
+        if (userSnapshot.hasError) {
+          return Scaffold(body: Center(child: Text(l10n.loadProfileFailed)));
+        }
+        if (!userSnapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final user = userSnapshot.data;
+        if (user == null) {
+          return Scaffold(body: Center(child: Text(l10n.profileMissing)));
+        }
+        return StreamBuilder<List<User>>(
+          stream: users.watchMatches(),
+          builder: (context, matchesSnapshot) {
+            final l10n = AppLocalizations.of(context)!;
+            if (matchesSnapshot.hasError) {
+              return Scaffold(
+                body: Center(child: Text(l10n.loadMatchesFailed)),
+              );
+            }
+            if (!matchesSnapshot.hasData) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return StreamBuilder<List<Skill>>(
+              stream: skills.watchSkills(),
+              builder: (context, skillsSnapshot) {
+                final l10n = AppLocalizations.of(context)!;
+                if (skillsSnapshot.hasError) {
+                  return Scaffold(
+                    body: Center(child: Text(l10n.loadSkillsFailed)),
+                  );
+                }
+                if (!skillsSnapshot.hasData) {
+                  return const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                return _buildContent(
+                  context,
+                  user,
+                  matchesSnapshot.data!,
+                  skillsSnapshot.data!,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    User currentUser,
+    List<User> matches,
+    List<Skill> skills,
+  ) {
     final theme = Theme.of(context);
-    final currentUser = MockUsers.currentUser;
+    final l10n = AppLocalizations.of(context)!;
 
     //Les 2 meilleurs matches pour la section "Pour toi".
-    final topMatches = MockUsers.matchesSortedByCompatibility.take(2).toList();
+    final topMatches = matches.take(2).toList();
     //Les compétences les plus populaires, triées par nombre d'étudiants.
-    final popularSkills = List.of(MockSkills.skills)
+    final popularSkills = List.of(skills)
       ..sort((a, b) => b.studentsCount.compareTo(a.studentsCount));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hello ${currentUser.name.split(' ').first}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
+        title: Text(l10n.homeGreeting(currentUser.name.split(' ').first)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            'Qu\'aimerais-tu apprendre aujourd\'hui ?',
-            style: theme.textTheme.headlineLarge,
-          ),
+          Text(l10n.homePrompt, style: theme.textTheme.headlineLarge),
           const SizedBox(height: 16),
 
           //Barre de recherche cliquable : redirige vers Explore
           //(la vraie recherche interactive se fait sur cet écran dédié).
-          GestureDetector(
-            onTap: () => context.goNamed('explore'),
-            child: AbsorbPointer(
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Rechercher une compétence...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: const Icon(Icons.tune),
+          Semantics(
+            button: true,
+            label: l10n.searchSkill,
+            child: InkWell(
+              onTap: () => context.goNamed('explore'),
+              child: AbsorbPointer(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: l10n.searchSkill,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: const Icon(Icons.tune),
+                  ),
                 ),
               ),
             ),
@@ -61,8 +139,11 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Tes compétences', style: theme.textTheme.titleMedium),
-              TextButton(onPressed: () {}, child: const Text('Voir tout')),
+              Text(l10n.yourSkills, style: theme.textTheme.titleMedium),
+              TextButton(
+                onPressed: () => context.goNamed('explore'),
+                child: Text(l10n.viewAll),
+              ),
             ],
           ),
           Wrap(
@@ -77,7 +158,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           //--- Section "Pour toi" (suggestions de matches) ---
-          Text('Pour toi', style: theme.textTheme.titleMedium),
+          Text(l10n.forYou, style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
           ...topMatches.map(
             (user) => Padding(
@@ -97,11 +178,11 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Compétences populaires',
-                style: theme.textTheme.titleMedium,
+              Text(l10n.popularSkills, style: theme.textTheme.titleMedium),
+              TextButton(
+                onPressed: () => context.goNamed('explore'),
+                child: Text(l10n.viewAll),
               ),
-              TextButton(onPressed: () {}, child: const Text('Voir tout')),
             ],
           ),
           const SizedBox(height: 8),
@@ -114,26 +195,30 @@ class HomeScreen extends StatelessWidget {
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
                 final skill = popularSkills[index];
-                return GestureDetector(
-                  onTap: () => context.goNamed(
-                    'skillDetail',
-                    pathParameters: {'id': skill.id},
-                  ),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: theme.colorScheme.primary.withValues(
-                          alpha: 0.1,
+                return Semantics(
+                  button: true,
+                  label: skill.title,
+                  child: InkWell(
+                    onTap: () => context.goNamed(
+                      'skillDetail',
+                      pathParameters: {'id': skill.id},
+                    ),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundColor: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
+                          child: Icon(
+                            Icons.bolt,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.bolt,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(skill.title, style: theme.textTheme.bodyMedium),
-                    ],
+                        const SizedBox(height: 6),
+                        Text(skill.title, style: theme.textTheme.bodyMedium),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -159,31 +244,31 @@ class HomeScreen extends StatelessWidget {
               break;
           }
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
-            label: 'Accueil',
+            label: l10n.navHome,
           ),
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
-            label: 'Explorer',
+            label: l10n.navExplore,
           ),
           NavigationDestination(
             icon: Icon(Icons.favorite_outline),
             selectedIcon: Icon(Icons.favorite),
-            label: 'Matches',
+            label: l10n.navMatches,
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
             selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Messages',
+            label: l10n.navMessages,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
-            label: 'Profil',
+            label: l10n.navProfile,
           ),
         ],
       ),

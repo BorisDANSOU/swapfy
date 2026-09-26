@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 import '../../models/user.dart';
@@ -5,9 +6,13 @@ import '../auth_repository.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
   final firebase_auth.FirebaseAuth _auth;
+  final FirebaseFirestore _firestore;
 
-  FirebaseAuthRepository({firebase_auth.FirebaseAuth? auth})
-    : _auth = auth ?? firebase_auth.FirebaseAuth.instance;
+  FirebaseAuthRepository({
+    firebase_auth.FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+  }) : _auth = auth ?? firebase_auth.FirebaseAuth.instance,
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Stream<User?> authStateChanges() => _auth.authStateChanges().map(_mapUser);
@@ -18,7 +23,11 @@ class FirebaseAuthRepository implements AuthRepository {
       email: email,
       password: password,
     );
-    return _mapUser(credential.user)!;
+    final user = _mapUser(credential.user)!;
+    final profileReference = _firestore.collection('users').doc(user.id);
+    final profile = await profileReference.get();
+    if (!profile.exists) await profileReference.set(user.toMap());
+    return user;
   }
 
   @override
@@ -27,7 +36,9 @@ class FirebaseAuthRepository implements AuthRepository {
       email: email,
       password: password,
     );
-    return _mapUser(credential.user)!;
+    final user = _mapUser(credential.user)!;
+    await _firestore.collection('users').doc(user.id).set(user.toMap());
+    return user;
   }
 
   @override

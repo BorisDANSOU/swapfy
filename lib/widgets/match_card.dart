@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/user.dart';
 import 'custom_button.dart';
 import 'remote_avatar.dart';
@@ -15,6 +16,7 @@ class MatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       child: Padding(
@@ -74,7 +76,7 @@ class MatchCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: CustomButton(
-                label: 'Échanger',
+                label: l10n.exchangeAction,
                 onPressed: onExchange ?? () {},
               ),
             ),

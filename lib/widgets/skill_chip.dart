@@ -40,8 +40,9 @@ class SkillChip extends StatelessWidget {
       button: onTap != null,
       selected: isSelected,
       label: label,
-      child: GestureDetector(
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(100),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(

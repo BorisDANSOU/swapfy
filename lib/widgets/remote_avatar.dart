@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class RemoteAvatar extends StatelessWidget {
   final String imageUrl;
@@ -15,6 +16,9 @@ class RemoteAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final cacheDimension = (radius * 2 * MediaQuery.devicePixelRatioOf(context))
+        .round();
     final initials = name.trim().isEmpty
         ? '?'
         : name
@@ -27,7 +31,7 @@ class RemoteAvatar extends StatelessWidget {
 
     return Semantics(
       image: true,
-      label: 'Photo de $name',
+      label: l10n.photoOf(name),
       child: CircleAvatar(
         radius: radius,
         child: ClipOval(
@@ -35,6 +39,8 @@ class RemoteAvatar extends StatelessWidget {
             imageUrl: imageUrl,
             width: radius * 2,
             height: radius * 2,
+            memCacheWidth: cacheDimension,
+            memCacheHeight: cacheDimension,
             fit: BoxFit.cover,
             placeholder: (context, url) => const SizedBox(
               width: 18,

@@ -169,6 +169,498 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Inscription impossible'**
   String get registerFailed;
+
+  /// No description provided for @navHome.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accueil'**
+  String get navHome;
+
+  /// No description provided for @navExplore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Explorer'**
+  String get navExplore;
+
+  /// No description provided for @navMatches.
+  ///
+  /// In fr, this message translates to:
+  /// **'Matches'**
+  String get navMatches;
+
+  /// No description provided for @navMessages.
+  ///
+  /// In fr, this message translates to:
+  /// **'Messages'**
+  String get navMessages;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil'**
+  String get navProfile;
+
+  /// No description provided for @homeGreeting.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bonjour {name}'**
+  String homeGreeting(String name);
+
+  /// No description provided for @homePrompt.
+  ///
+  /// In fr, this message translates to:
+  /// **'Qu\'aimeriez-vous apprendre aujourd\'hui ?'**
+  String get homePrompt;
+
+  /// No description provided for @searchSkill.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher une compétence...'**
+  String get searchSkill;
+
+  /// No description provided for @yourSkills.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos compétences'**
+  String get yourSkills;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir tout'**
+  String get viewAll;
+
+  /// No description provided for @forYou.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour vous'**
+  String get forYou;
+
+  /// No description provided for @popularSkills.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compétences populaires'**
+  String get popularSkills;
+
+  /// No description provided for @exploreTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Explorer les compétences'**
+  String get exploreTitle;
+
+  /// No description provided for @categoryAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes'**
+  String get categoryAll;
+
+  /// No description provided for @noSkillsFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune compétence trouvée.'**
+  String get noSkillsFound;
+
+  /// No description provided for @loadSkillsFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger les compétences.'**
+  String get loadSkillsFailed;
+
+  /// No description provided for @peopleCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} personnes'**
+  String peopleCount(int count);
+
+  /// No description provided for @matchesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos meilleurs matchs'**
+  String get matchesTitle;
+
+  /// No description provided for @noMatches.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun match pour le moment.'**
+  String get noMatches;
+
+  /// No description provided for @loadMatchesFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger les matchs.'**
+  String get loadMatchesFailed;
+
+  /// No description provided for @messagesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Messages'**
+  String get messagesTitle;
+
+  /// No description provided for @searchConversation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher une conversation...'**
+  String get searchConversation;
+
+  /// No description provided for @noConversations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune conversation trouvée.'**
+  String get noConversations;
+
+  /// No description provided for @loadConversationsFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger les conversations.'**
+  String get loadConversationsFailed;
+
+  /// No description provided for @loadProfilesFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger les profils.'**
+  String get loadProfilesFailed;
+
+  /// No description provided for @conversationTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conversation'**
+  String get conversationTitle;
+
+  /// No description provided for @loadConversationFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger cette conversation.'**
+  String get loadConversationFailed;
+
+  /// No description provided for @loadMessagesFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger les messages.'**
+  String get loadMessagesFailed;
+
+  /// No description provided for @writeMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Écrire un message...'**
+  String get writeMessage;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer le message'**
+  String get sendMessage;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil'**
+  String get profileTitle;
+
+  /// No description provided for @editProfileAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier'**
+  String get editProfileAction;
+
+  /// No description provided for @exchanges.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échanges'**
+  String get exchanges;
+
+  /// No description provided for @skillsCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compétences'**
+  String get skillsCount;
+
+  /// No description provided for @rating.
+  ///
+  /// In fr, this message translates to:
+  /// **'Note'**
+  String get rating;
+
+  /// No description provided for @skillsOffered.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je maîtrise'**
+  String get skillsOffered;
+
+  /// No description provided for @skillsWanted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je souhaite apprendre'**
+  String get skillsWanted;
+
+  /// No description provided for @about.
+  ///
+  /// In fr, this message translates to:
+  /// **'À propos'**
+  String get about;
+
+  /// No description provided for @available.
+  ///
+  /// In fr, this message translates to:
+  /// **'Disponible pour échanger'**
+  String get available;
+
+  /// No description provided for @unavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indisponible'**
+  String get unavailable;
+
+  /// No description provided for @darkTheme.
+  ///
+  /// In fr, this message translates to:
+  /// **'Thème sombre'**
+  String get darkTheme;
+
+  /// No description provided for @enabled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activé'**
+  String get enabled;
+
+  /// No description provided for @disabled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactivé'**
+  String get disabled;
+
+  /// No description provided for @languageLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Langue'**
+  String get languageLabel;
+
+  /// No description provided for @languageFrench.
+  ///
+  /// In fr, this message translates to:
+  /// **'Français'**
+  String get languageFrench;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In fr, this message translates to:
+  /// **'Anglais'**
+  String get languageEnglish;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier mon profil'**
+  String get editProfileTitle;
+
+  /// No description provided for @nameLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom *'**
+  String get nameLabel;
+
+  /// No description provided for @bioLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bio *'**
+  String get bioLabel;
+
+  /// No description provided for @skillsOfferedLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compétences maîtrisées *'**
+  String get skillsOfferedLabel;
+
+  /// No description provided for @skillsWantedLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compétences recherchées *'**
+  String get skillsWantedLabel;
+
+  /// No description provided for @skillsOfferedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ex. : Flutter, Python'**
+  String get skillsOfferedHint;
+
+  /// No description provided for @skillsWantedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ex. : React, anglais'**
+  String get skillsWantedHint;
+
+  /// No description provided for @requiredName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le nom est obligatoire'**
+  String get requiredName;
+
+  /// No description provided for @shortName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le nom doit contenir au moins 2 caractères'**
+  String get shortName;
+
+  /// No description provided for @requiredBio.
+  ///
+  /// In fr, this message translates to:
+  /// **'La bio est obligatoire'**
+  String get requiredBio;
+
+  /// No description provided for @shortBio.
+  ///
+  /// In fr, this message translates to:
+  /// **'La bio doit contenir au moins 10 caractères'**
+  String get shortBio;
+
+  /// No description provided for @requiredOffered.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indiquez au moins une compétence maîtrisée'**
+  String get requiredOffered;
+
+  /// No description provided for @requiredWanted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indiquez au moins une compétence recherchée'**
+  String get requiredWanted;
+
+  /// No description provided for @skillLevel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Niveau'**
+  String get skillLevel;
+
+  /// No description provided for @beginner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Débutant'**
+  String get beginner;
+
+  /// No description provided for @intermediate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Intermédiaire'**
+  String get intermediate;
+
+  /// No description provided for @expert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expert'**
+  String get expert;
+
+  /// No description provided for @availability.
+  ///
+  /// In fr, this message translates to:
+  /// **'Disponibilité'**
+  String get availability;
+
+  /// No description provided for @saveProfile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer mon profil'**
+  String get saveProfile;
+
+  /// No description provided for @savedProfile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil enregistré avec succès !'**
+  String get savedProfile;
+
+  /// No description provided for @saveProfileFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'enregistrer le profil.'**
+  String get saveProfileFailed;
+
+  /// No description provided for @loadProfileFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger le profil.'**
+  String get loadProfileFailed;
+
+  /// No description provided for @profileMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil utilisateur introuvable.'**
+  String get profileMissing;
+
+  /// No description provided for @skillNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette compétence n\'existe pas.'**
+  String get skillNotFound;
+
+  /// No description provided for @averageLevel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Niveau moyen'**
+  String get averageLevel;
+
+  /// No description provided for @description.
+  ///
+  /// In fr, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @relatedSkills.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compétences associées'**
+  String get relatedSkills;
+
+  /// No description provided for @peopleKnowSkill.
+  ///
+  /// In fr, this message translates to:
+  /// **'Personnes qui maîtrisent {skill}'**
+  String peopleKnowSkill(String skill);
+
+  /// No description provided for @expertLevel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Niveau expert'**
+  String get expertLevel;
+
+  /// No description provided for @intermediateLevel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Niveau intermédiaire'**
+  String get intermediateLevel;
+
+  /// No description provided for @exchangeProposal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposer un échange'**
+  String get exchangeProposal;
+
+  /// No description provided for @photoOf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo de {name}'**
+  String photoOf(String name);
+
+  /// No description provided for @messageFromYou.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous : {message}'**
+  String messageFromYou(String message);
+
+  /// No description provided for @messageFromPartner.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} : {message}'**
+  String messageFromPartner(String name, String message);
+
+  /// No description provided for @exchangeAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échanger'**
+  String get exchangeAction;
+
+  /// No description provided for @viewAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir'**
+  String get viewAction;
 }
 
 class _AppLocalizationsDelegate

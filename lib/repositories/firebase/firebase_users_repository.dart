@@ -33,14 +33,22 @@ class FirebaseUsersRepository implements UsersRepository {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return Stream.value(const []);
     return _collection
-        .where(FieldPath.documentId, isNotEqualTo: userId)
         .orderBy('compatibilityPercent', descending: true)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
               .map((doc) => User.fromMap({...doc.data(), 'id': doc.id}))
+              .where((user) => user.id != userId)
               .toList(),
         );
+  }
+
+  @override
+  Future<User?> getById(String id) async {
+    final snapshot = await _collection.doc(id).get();
+    final data = snapshot.data();
+    if (!snapshot.exists || data == null) return null;
+    return User.fromMap({...data, 'id': snapshot.id});
   }
 
   @override

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../app/theme_controller.dart';
+import '../app/locale_controller.dart';
 import '../data/users.dart';
+import '../models/user.dart';
+import '../repositories/users_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/skill_chip.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/remote_avatar.dart';
@@ -11,7 +15,9 @@ import '../widgets/remote_avatar.dart';
 //StatefulWidget car il doit RETENIR l'état du switch et se redessiner
 //quand ThemeController notifie un changement.
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final UsersRepository? usersRepository;
+
+  const ProfileScreen({super.key, this.usersRepository});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -20,11 +26,37 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    final repository = widget.usersRepository;
+    if (repository != null) {
+      return StreamBuilder<User?>(
+        stream: repository.watchCurrentUser(),
+        builder: (context, snapshot) {
+          final l10n = AppLocalizations.of(context)!;
+          if (snapshot.hasError) {
+            return Scaffold(body: Center(child: Text(l10n.loadProfileFailed)));
+          }
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final user = snapshot.data;
+          if (user == null) {
+            return Scaffold(body: Center(child: Text(l10n.profileMissing)));
+          }
+          return _buildContent(context, user);
+        },
+      );
+    }
+    return _buildContent(context, MockUsers.currentUser);
+  }
+
+  Widget _buildContent(BuildContext context, User user) {
     final theme = Theme.of(context);
-    final user = MockUsers.currentUser;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -58,7 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               CustomButton(
-                label: 'Modifier',
+                label: l10n.editProfileAction,
                 isOutlined: true,
                 isSmall: true,
                 onPressed: () => context.pushNamed('editProfile'),
@@ -70,19 +102,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
           //--- Statistiques : Échanges / Compétences / Note ---
           Row(
             children: [
-              _StatBlock(value: '${user.exchangesCount}', label: 'Échanges'),
+              _StatBlock(
+                value: '${user.exchangesCount}',
+                label: l10n.exchanges,
+              ),
               _StatBlock(
                 value: '${user.skillsOffered.length}',
-                label: 'Compétences',
+                label: l10n.skillsCount,
               ),
-              _StatBlock(value: user.rating.toStringAsFixed(1), label: 'Note'),
+              _StatBlock(
+                value: user.rating.toStringAsFixed(1),
+                label: l10n.rating,
+              ),
             ],
           ),
           const SizedBox(height: 20),
           const Divider(),
           const SizedBox(height: 12),
 
-          Text('Je maîtrise', style: theme.textTheme.titleMedium),
+          Text(l10n.skillsOffered, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -93,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 20),
 
-          Text('Je souhaite apprendre', style: theme.textTheme.titleMedium),
+          Text(l10n.skillsWanted, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -106,7 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Divider(),
           const SizedBox(height: 12),
 
-          Text('À propos', style: theme.textTheme.titleMedium),
+          Text(l10n.about, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(user.bio, style: theme.textTheme.bodyLarge),
           const SizedBox(height: 20),
@@ -123,7 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                user.isAvailable ? 'Disponible pour échanger' : 'Indisponible',
+                user.isAvailable ? l10n.available : l10n.unavailable,
                 style: theme.textTheme.bodyMedium,
               ),
             ],
@@ -140,15 +178,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
             builder: (context, _) {
               return SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Thème sombre'),
+                title: Text(l10n.darkTheme),
                 subtitle: Text(
-                  ThemeController.instance.isDarkMode ? 'Activé' : 'Désactivé',
+                  ThemeController.instance.isDarkMode
+                      ? l10n.enabled
+                      : l10n.disabled,
                 ),
                 value: ThemeController.instance.isDarkMode,
                 onChanged: (value) =>
                     ThemeController.instance.setDarkMode(value),
               );
             },
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.languageLabel),
+            trailing: DropdownButton<Locale>(
+              value: LocaleController.instance.locale,
+              items: [
+                DropdownMenuItem(
+                  value: const Locale('fr'),
+                  child: Text(l10n.languageFrench),
+                ),
+                DropdownMenuItem(
+                  value: const Locale('en'),
+                  child: Text(l10n.languageEnglish),
+                ),
+              ],
+              onChanged: (locale) {
+                if (locale != null) LocaleController.instance.setLocale(locale);
+              },
+            ),
           ),
         ],
       ),
@@ -170,31 +230,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               break;
           }
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
-            label: 'Accueil',
+            label: l10n.navHome,
           ),
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
-            label: 'Explorer',
+            label: l10n.navExplore,
           ),
           NavigationDestination(
             icon: Icon(Icons.favorite_outline),
             selectedIcon: Icon(Icons.favorite),
-            label: 'Matches',
+            label: l10n.navMatches,
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
             selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Messages',
+            label: l10n.navMessages,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
-            label: 'Profil',
+            label: l10n.navProfile,
           ),
         ],
       ),

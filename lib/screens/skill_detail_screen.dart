@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 import '../data/skills.dart';
 import '../data/users.dart';
 import '../models/skill.dart';
+import '../models/user.dart';
+import '../repositories/skills_repository.dart';
+import '../repositories/users_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/skill_chip.dart';
 import '../widgets/user_card.dart';
 import '../widgets/custom_button.dart';
@@ -13,8 +17,15 @@ import '../widgets/custom_button.dart';
 //StatelessWidget : n'affiche que des données reçues/retrouvées.
 class SkillDetailScreen extends StatelessWidget {
   final String skillId;
+  final SkillsRepository? skillsRepository;
+  final UsersRepository? usersRepository;
 
-  const SkillDetailScreen({super.key, required this.skillId});
+  const SkillDetailScreen({
+    super.key,
+    required this.skillId,
+    this.skillsRepository,
+    this.usersRepository,
+  });
 
   //Convertit le niveau (enum) en une valeur 0.0-1.0 pour la barre
   //de progression "Niveau moyen" vue sur ta maquette.
@@ -29,24 +40,98 @@ class SkillDetailScreen extends StatelessWidget {
     }
   }
 
+  String _localizedLevel(AppLocalizations l10n, SkillLevel level) {
+    return switch (level) {
+      SkillLevel.beginner => l10n.beginner,
+      SkillLevel.intermediate => l10n.intermediate,
+      SkillLevel.expert => l10n.expert,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final skill = MockSkills.getById(skillId);
+    final skills = skillsRepository;
+    if (skills == null) {
+      final skill = MockSkills.getById(skillId);
+      return _buildForSkill(context, skill);
+    }
+    return FutureBuilder<Skill?>(
+      future: skills.getById(skillId),
+      builder: (context, snapshot) {
+        final l10n = AppLocalizations.of(context)!;
+        if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text(l10n.loadSkillsFailed)));
+        }
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildForSkill(context, snapshot.data);
+      },
+    );
+  }
 
-    //Cas où l'id ne correspond à aucune compétence (lien invalide).
-    //On affiche un message clair plutôt que de planter.
+  Widget _buildForSkill(BuildContext context, Skill? skill) {
+    final l10n = AppLocalizations.of(context)!;
     if (skill == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Cette compétence n\'existe pas.')),
+        body: Center(child: Text(l10n.skillNotFound)),
       );
     }
 
-    final author = MockUsers.getById(skill.authorId);
+    final repository = usersRepository;
+    if (repository == null) {
+      return _buildContent(
+        context,
+        skill,
+        MockUsers.getById(skill.authorId),
+        MockUsers.users,
+      );
+    }
+    return FutureBuilder<({User? author, List<User> users})>(
+      future: _loadUsers(repository, skill),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text(l10n.loadProfilesFailed)));
+        }
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildContent(
+          context,
+          skill,
+          snapshot.data!.author,
+          snapshot.data!.users,
+        );
+      },
+    );
+  }
+
+  Future<({User? author, List<User> users})> _loadUsers(
+    UsersRepository repository,
+    Skill skill,
+  ) async {
+    final author = await repository.getById(skill.authorId);
+    final users = await repository.watchMatches().first;
+    return (author: author, users: users);
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    Skill skill,
+    User? author,
+    List<User> users,
+  ) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     //Utilisateurs qui maîtrisent aussi cette compétence, en excluant
     //l'auteur (déjà mis en avant séparément).
-    final peopleWhoKnow = MockUsers.users
+    final peopleWhoKnow = users
         .where(
           (user) =>
               user.skillsOffered.contains(skill.title) &&
@@ -91,7 +176,7 @@ class SkillDetailScreen extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                '${skill.studentsCount} personnes maîtrisent cette compétence',
+                l10n.peopleCount(skill.studentsCount),
                 style: theme.textTheme.bodyMedium,
               ),
             ],
@@ -102,8 +187,11 @@ class SkillDetailScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Niveau moyen', style: theme.textTheme.titleMedium),
-              Text(skill.level.label, style: theme.textTheme.bodyMedium),
+              Text(l10n.averageLevel, style: theme.textTheme.titleMedium),
+              Text(
+                _localizedLevel(l10n, skill.level),
+                style: theme.textTheme.bodyMedium,
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -118,14 +206,14 @@ class SkillDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          Text('Description', style: theme.textTheme.titleMedium),
+          Text(l10n.description, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(skill.description, style: theme.textTheme.bodyLarge),
           const SizedBox(height: 20),
 
           //--- Compétences associées ---
           if (skill.associatedSkills.isNotEmpty) ...[
-            Text('Compétences associées', style: theme.textTheme.titleMedium),
+            Text(l10n.relatedSkills, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -140,7 +228,7 @@ class SkillDetailScreen extends StatelessWidget {
           //--- Personnes qui maîtrisent cette compétence ---
           if (peopleWhoKnow.isNotEmpty) ...[
             Text(
-              'Personnes qui maîtrisent ${skill.title}',
+              l10n.peopleKnowSkill(skill.title),
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -150,8 +238,8 @@ class SkillDetailScreen extends StatelessWidget {
                 child: UserCard(
                   user: user,
                   subtitle: user.compatibilityPercent >= 80
-                      ? 'Expert Level'
-                      : 'Intermediate Level',
+                      ? l10n.expertLevel
+                      : l10n.intermediateLevel,
                   badgeText: '${user.compatibilityPercent}%',
                   onTap: () => context.goNamed(
                     'conversation',
@@ -166,7 +254,7 @@ class SkillDetailScreen extends StatelessWidget {
           //--- Bouton d'action principal ---
           if (author != null)
             CustomButton(
-              label: 'Proposer un échange',
+              label: l10n.exchangeProposal,
               onPressed: () => context.goNamed(
                 'conversation',
                 pathParameters: {'userId': author.id},

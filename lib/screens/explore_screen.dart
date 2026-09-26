@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/skills.dart';
 import '../models/skill.dart';
+import '../repositories/skills_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/skill_chip.dart';
 
 //Écran Explore : liste toutes les compétences, groupées par catégorie,
@@ -9,7 +11,9 @@ import '../widgets/skill_chip.dart';
 //StatefulWidget car il faut RETENIR le texte tapé et la catégorie
 //sélectionnée, pour rafraîchir l'affichage à chaque changement.
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  final SkillsRepository? skillsRepository;
+
+  const ExploreScreen({super.key, this.skillsRepository});
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -30,9 +34,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   //Recalcule la liste filtrée à chaque accès, en combinant recherche
   //texte ET filtre de catégorie.
-  List<Skill> get _filteredSkills {
+  List<Skill> _filteredSkills(List<Skill> skills) {
     final query = _searchController.text.toLowerCase();
-    return MockSkills.skills.where((skill) {
+    return skills.where((skill) {
       final matchesQuery = skill.title.toLowerCase().contains(query);
       final matchesCategory =
           _selectedCategory == null || skill.category == _selectedCategory;
@@ -42,18 +46,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final repository = widget.skillsRepository;
+    if (repository != null) {
+      return StreamBuilder<List<Skill>>(
+        stream: repository.watchSkills(),
+        builder: (context, snapshot) {
+          final l10n = AppLocalizations.of(context)!;
+          if (snapshot.hasError) {
+            return Scaffold(body: Center(child: Text(l10n.loadSkillsFailed)));
+          }
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return _buildContent(context, snapshot.data!);
+        },
+      );
+    }
+    return _buildContent(context, MockSkills.skills);
+  }
+
+  Widget _buildContent(BuildContext context, List<Skill> skills) {
     final theme = Theme.of(context);
-    final categories = MockSkills.categories;
+    final l10n = AppLocalizations.of(context)!;
+    final categories = skills.map((skill) => skill.category).toSet().toList()
+      ..sort();
 
     //Regroupe les compétences filtrées par catégorie, pour un affichage
     //en sections (comme "Développement", "Design" sur ta maquette).
     final grouped = <String, List<Skill>>{};
-    for (final skill in _filteredSkills) {
+    for (final skill in _filteredSkills(skills)) {
       grouped.putIfAbsent(skill.category, () => []).add(skill);
+    }
+    final rows = <({String? category, Skill? skill})>[];
+    for (final entry in grouped.entries) {
+      rows.add((category: entry.key, skill: null));
+      rows.addAll(entry.value.map((skill) => (category: null, skill: skill)));
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Explorer les compétences')),
+      appBar: AppBar(title: Text(l10n.exploreTitle)),
       body: Column(
         children: [
           Padding(
@@ -63,8 +96,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
               children: [
                 TextField(
                   controller: _searchController,
-                  decoration: const InputDecoration(
-                    hintText: 'Rechercher une compétence...',
+                  decoration: InputDecoration(
+                    hintText: l10n.searchSkill,
                     prefixIcon: Icon(Icons.search),
                   ),
                   //Chaque frappe déclenche un setState, qui force Flutter
@@ -79,7 +112,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   runSpacing: 8,
                   children: [
                     SkillChip(
-                      label: 'Toutes',
+                      label: l10n.categoryAll,
                       isSelected: _selectedCategory == null,
                       onTap: () => setState(() => _selectedCategory = null),
                     ),
@@ -102,47 +135,45 @@ class _ExploreScreenState extends State<ExploreScreen> {
             child: grouped.isEmpty
                 ? Center(
                     child: Text(
-                      'Aucune compétence trouvée.',
+                      l10n.noSkillsFound,
                       style: theme.textTheme.bodyMedium,
                     ),
                   )
-                : ListView(
+                : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: grouped.entries.map((entry) {
-                      final category = entry.key;
-                      final skillsInCategory = entry.value;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 12),
-                          Text(category, style: theme.textTheme.titleMedium),
-                          const SizedBox(height: 8),
-                          ...skillsInCategory.map(
-                            (skill) => Card(
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: theme.colorScheme.primary
-                                      .withValues(alpha: 0.1),
-                                  child: Icon(
-                                    Icons.bolt,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                                title: Text(skill.title),
-                                subtitle: Text(
-                                  '${skill.studentsCount} personnes',
-                                ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () => context.goNamed(
-                                  'skillDetail',
-                                  pathParameters: {'id': skill.id},
-                                ),
-                              ),
+                    itemCount: rows.length,
+                    itemBuilder: (context, index) {
+                      final row = rows[index];
+                      final skill = row.skill;
+                      if (skill == null) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 12, bottom: 8),
+                          child: Text(
+                            row.category!,
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        );
+                      }
+                      return Card(
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: theme.colorScheme.primary
+                                .withValues(alpha: 0.1),
+                            child: Icon(
+                              Icons.bolt,
+                              color: theme.colorScheme.primary,
                             ),
                           ),
-                        ],
+                          title: Text(skill.title),
+                          subtitle: Text(l10n.peopleCount(skill.studentsCount)),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => context.goNamed(
+                            'skillDetail',
+                            pathParameters: {'id': skill.id},
+                          ),
+                        ),
                       );
-                    }).toList(),
+                    },
                   ),
           ),
         ],
@@ -165,31 +196,31 @@ class _ExploreScreenState extends State<ExploreScreen> {
               break;
           }
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
-            label: 'Accueil',
+            label: l10n.navHome,
           ),
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
-            label: 'Explorer',
+            label: l10n.navExplore,
           ),
           NavigationDestination(
             icon: Icon(Icons.favorite_outline),
             selectedIcon: Icon(Icons.favorite),
-            label: 'Matches',
+            label: l10n.navMatches,
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
             selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Messages',
+            label: l10n.navMessages,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
-            label: 'Profil',
+            label: l10n.navProfile,
           ),
         ],
       ),

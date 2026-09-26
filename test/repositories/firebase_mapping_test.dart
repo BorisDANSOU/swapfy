@@ -63,5 +63,20 @@ void main() {
     expect(user.skillsOffered, isEmpty);
     expect(user.rating, 0);
     expect(user.isAvailable, isTrue);
+    expect(user.skillLevel, SkillLevel.intermediate);
+  });
+
+  test('user profile persists its selected skill level', () {
+    final user = User.fromMap(const {
+      'id': 'u1',
+      'name': 'Sarah',
+      'skillLevel': 'expert',
+    });
+
+    expect(user.skillLevel, SkillLevel.expert);
+    expect(
+      user.copyWith(skillLevel: SkillLevel.beginner).toMap()['skillLevel'],
+      'beginner',
+    );
   });
 }

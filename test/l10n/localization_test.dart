@@ -9,4 +9,14 @@ void main() {
       containsAll(const [Locale('fr'), Locale('en')]),
     );
   });
+
+  test('main navigation labels are translated in French and English', () async {
+    final french = await AppLocalizations.delegate.load(const Locale('fr'));
+    final english = await AppLocalizations.delegate.load(const Locale('en'));
+
+    expect(french.navHome, 'Accueil');
+    expect(english.navHome, 'Home');
+    expect(french.languageLabel, 'Langue');
+    expect(english.languageLabel, 'Language');
+  });
 }

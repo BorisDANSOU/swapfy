@@ -4,9 +4,9 @@ Application mobile multi-écrans développée avec Flutter, permettant à des é
 
 [![Flutter CI](https://github.com/BorisDANSOU/swapfy/actions/workflows/ci.yml/badge.svg)](https://github.com/BorisDANSOU/swapfy/actions/workflows/ci.yml)
 
-## Architecture production
+## Architecture
 
-Swapfy sépare l'interface des sources de données avec des repositories injectables. Les implémentations Firebase Auth/Firestore servent la production et les fake repositories permettent des tests déterministes sans réseau. Les traductions FR/EN sont générées depuis `l10n/`.
+Swapfy sépare l'interface des sources de données avec des repositories injectables. Firebase Auth gère la session; Firestore fournit les profils, compétences et conversations. Les fake repositories permettent des tests déterministes sans réseau. Les traductions FR/EN sont générées depuis `l10n/`.
 
 ## Aperçu
 
@@ -45,9 +45,9 @@ Swapfy connecte des personnes qui souhaitent enseigner une compétence (ex: Flut
 - **Explorer** : recherche en temps réel et filtrage par catégorie des compétences disponibles
 - **Détail d'une compétence** : description complète, niveau, compétences associées, personnes qui la maîtrisent (reçoit l'id de la compétence via les paramètres de navigation)
 - **Matches** : liste des profils compatibles, triés par pourcentage de compatibilité
-- **Messages & Conversation** : liste des contacts et messagerie individuelle simulée
-- **Profil** : statistiques (échanges, compétences, note), compétences maîtrisées/recherchées, **bascule thème clair/sombre**
-- **Modifier le profil** : formulaire complet avec validation (nom, bio, compétences maîtrisées, compétences recherchées)
+- **Messages & Conversation** : conversations et messages persistés dans Firestore
+- **Profil** : statistiques (échanges, compétences, note), compétences maîtrisées/recherchées, bascules thème clair/sombre et langue FR/EN
+- **Modifier le profil** : formulaire validé et profil enregistré dans Firestore
 
 ## Navigation
 
@@ -90,22 +90,9 @@ flutter run -d chrome
 
 *(fonctionne aussi sur émulateur Android/iOS ou appareil physique avec `flutter run`)*
 
-### Mode démonstration fake
+### Données de test
 
-Configure d'abord Firebase pour les plateformes ciblées :
-
-```bash
-dart pub global activate flutterfire_cli
-flutterfire configure
-```
-
-Puis lance l'application avec :
-
-```bash
-flutter run -d chrome
-```
-
-L'application initialise Firebase avant `runApp` et utilise exclusivement `FirebaseAuthRepository` ainsi que `FirebaseMessagesRepository`. Sans configuration Firebase valide, elle s'arrête au démarrage au lieu de basculer silencieusement vers des données locales.
+Les fake repositories sont injectés dans les tests unitaires, widget et d'intégration. Le lancement normal utilise Firebase; sans configuration valide, l'application ne bascule pas silencieusement sur les fixtures.
 
 ## Vérification qualité
 
@@ -113,9 +100,19 @@ L'application initialise Firebase avant `runApp` et utilise exclusivement `Fireb
 dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test
+npm ci --prefix firestore-rules-tests
+npm test --prefix firestore-rules-tests
 ```
 
-Le mode fake est utilisé par les tests et la CI. La génération i18n s'effectue avec `flutter gen-l10n`. Les règles Firebase et la configuration locale sont détaillées dans [docs/firebase-setup.md](docs/firebase-setup.md).
+Pour les tests d'intégration sur un émulateur Android démarré :
+
+```bash
+flutter test integration_test -d emulator-5554
+```
+
+La génération i18n s'effectue avec `flutter gen-l10n`. Les règles Firebase, la configuration locale et les secrets GitHub requis par les workflows sont détaillés dans [docs/firebase-setup.md](docs/firebase-setup.md). La procédure de mesure en mode profile est dans [docs/performance.md](docs/performance.md).
+
+Un APK debug peut être téléchargé depuis l'artifact `swapfy-debug-apk` du workflow Android après lancement manuel ou publication d'un tag `v*.*.*`.
 
 ## Structure du projet
 
@@ -126,8 +123,13 @@ lib/
 │ ├── router.dart # Configuration GoRouter (routes nommées)
 │ └── theme_controller.dart # Gestion globale du thème clair/sombre
 ├── models/
-│ ├── user.dart # Modèle utilisateur
-│ └── skill.dart # Modèle compétence
+│ ├── user.dart # Modèle utilisateur/profil
+│ ├── skill.dart # Modèle compétence
+│ ├── message.dart # Message Firestore
+│ └── conversation.dart # Conversation Firestore
+├── repositories/
+│ ├── firebase/ # Auth, profils, compétences et messagerie Firestore
+│ └── fake/ # Implémentations déterministes pour les tests
 ├── data/
 │ ├── users.dart # Données de démonstration (utilisateurs)
 │ └── skills.dart # Données de démonstration (compétences)
@@ -151,7 +153,7 @@ lib/
 ## Choix techniques
 
 - **Navigation** : GoRouter avec routes nommées et paramètres dynamiques (`/skill/:id`, `/messages/:userId`)
-- **Séparation UI/données** : aucune donnée métier n'est écrite en dur dans les widgets ; tout provient de `models/` et `data/`
+- **Séparation UI/données** : les écrans de production reçoivent les repositories depuis `AppRouter`; les fixtures `data/` sont réservées au fallback des tests/widgets isolés
 - **Widgets réutilisables** : 5 widgets partagés entre plusieurs écrans (`CustomButton`, `SkillChip`, `UserCard`, `MatchCard`, `CustomSearchBar`)
 - **Thème clair/sombre** : géré via `ThemeController` (`ChangeNotifier`), écouté globalement par `main.dart` et localement par `ProfileScreen` via `ListenableBuilder`
 - **Formulaire** : `Form` + `TextFormField` avec validation sur 4 champs (nom, bio, compétences maîtrisées, compétences recherchées)

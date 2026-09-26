@@ -11,12 +11,15 @@ void main() {
   ) async {
     await resetSession();
     await testAuthRepository.signIn('boris@example.com', 'password');
-    testRouter.goNamed('conversation', pathParameters: {'userId': 'u1'});
     await pumpSwapfy(tester);
+    testRouter.goNamed('conversation', pathParameters: {'userId': 'u1'});
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     await tester.enterText(find.byType(TextField), 'On commence demain ?');
     await tester.tap(find.byIcon(Icons.send));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('On commence demain ?'), findsOneWidget);
   });

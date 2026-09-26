@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../repositories/auth_repository.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,10 +43,19 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
       if (mounted) widget.onAuthenticated?.call();
-    } on FormatException catch (error) {
-      if (mounted) setState(() => _errorMessage = error.message);
+    } on FormatException {
+      if (mounted) {
+        setState(
+          () =>
+              _errorMessage = AppLocalizations.of(context)!.invalidCredentials,
+        );
+      }
     } catch (_) {
-      if (mounted) setState(() => _errorMessage = 'Connexion impossible');
+      if (mounted) {
+        setState(
+          () => _errorMessage = AppLocalizations.of(context)!.loginFailed,
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -53,8 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Se connecter')),
+      appBar: AppBar(title: Text(l10n.loginTitle)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -63,19 +74,18 @@ class _LoginScreenState extends State<LoginScreen> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: l10n.email),
               validator: (value) => value == null || !value.contains('@')
-                  ? 'Entre un email valide'
+                  ? l10n.invalidEmail
                   : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Mot de passe'),
-              validator: (value) => value == null || value.length < 6
-                  ? 'Le mot de passe doit contenir au moins 6 caractères'
-                  : null,
+              decoration: InputDecoration(labelText: l10n.password),
+              validator: (value) =>
+                  value == null || value.length < 6 ? l10n.shortPassword : null,
             ),
             const SizedBox(height: 24),
             if (_errorMessage != null)
@@ -90,13 +100,13 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 12),
             Semantics(
               button: true,
-              label: 'Se connecter',
+              label: l10n.loginAction,
               child: ElevatedButton(
                 key: const Key('login-submit'),
                 onPressed: _isSubmitting ? null : _submit,
                 child: _isSubmitting
                     ? const CircularProgressIndicator()
-                    : const Text('Se connecter'),
+                    : Text(l10n.loginAction),
               ),
             ),
           ],

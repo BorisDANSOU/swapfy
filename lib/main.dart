@@ -9,6 +9,8 @@ import 'app/locale_controller.dart';
 import 'app/firebase_bootstrap.dart';
 import 'repositories/firebase/firebase_auth_repository.dart';
 import 'repositories/firebase/firebase_messages_repository.dart';
+import 'repositories/firebase/firebase_skills_repository.dart';
+import 'repositories/firebase/firebase_users_repository.dart';
 
 //Point d'entrée de l'application : la fonction main() est le tout
 //premier code exécuté au lancement de l'app.
@@ -21,6 +23,8 @@ Future<void> main() async {
       routerConfig: AppRouter(
         instanceAuthRepository: FirebaseAuthRepository(),
         instanceMessagesRepository: FirebaseMessagesRepository(),
+        instanceSkillsRepository: FirebaseSkillsRepository(),
+        instanceUsersRepository: FirebaseUsersRepository(),
       ).goRouter,
     ),
   );
@@ -39,7 +43,7 @@ class SwapfyApp extends StatefulWidget {
 }
 
 class _SwapfyAppState extends State<SwapfyApp> {
-  final LocaleController _localeController = LocaleController();
+  final LocaleController _localeController = LocaleController.instance;
   @override
   void initState() {
     super.initState();
@@ -55,7 +59,6 @@ class _SwapfyAppState extends State<SwapfyApp> {
     //Toujours se désabonner en quittant, pour éviter les fuites mémoire.
     ThemeController.instance.removeListener(_onThemeChanged);
     _localeController.removeListener(_onLocaleChanged);
-    _localeController.dispose();
     super.dispose();
   }
 

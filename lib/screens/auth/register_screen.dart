@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../repositories/auth_repository.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -42,10 +43,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _passwordController.text,
       );
       if (mounted) widget.onRegistered?.call();
-    } on FormatException catch (error) {
-      if (mounted) setState(() => _errorMessage = error.message);
+    } on FormatException {
+      if (mounted) {
+        setState(
+          () => _errorMessage = AppLocalizations.of(context)!.registerFailed,
+        );
+      }
     } catch (_) {
-      if (mounted) setState(() => _errorMessage = 'Inscription impossible');
+      if (mounted) {
+        setState(
+          () => _errorMessage = AppLocalizations.of(context)!.registerFailed,
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -53,8 +62,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Créer un compte')),
+      appBar: AppBar(title: Text(l10n.registerTitle)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -63,19 +73,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: l10n.email),
               validator: (value) => value == null || !value.contains('@')
-                  ? 'Entre un email valide'
+                  ? l10n.invalidEmail
                   : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Mot de passe'),
-              validator: (value) => value == null || value.length < 6
-                  ? 'Le mot de passe doit contenir au moins 6 caractères'
-                  : null,
+              decoration: InputDecoration(labelText: l10n.password),
+              validator: (value) =>
+                  value == null || value.length < 6 ? l10n.shortPassword : null,
             ),
             const SizedBox(height: 24),
             if (_errorMessage != null)
@@ -86,13 +95,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const SizedBox(height: 12),
             Semantics(
               button: true,
-              label: 'Créer un compte',
+              label: l10n.registerAction,
               child: ElevatedButton(
                 key: const Key('register-submit'),
                 onPressed: _isSubmitting ? null : _submit,
                 child: _isSubmitting
                     ? const CircularProgressIndicator()
-                    : const Text('Créer un compte'),
+                    : Text(l10n.registerAction),
               ),
             ),
           ],

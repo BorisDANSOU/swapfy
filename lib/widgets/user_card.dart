@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/user.dart';
 import 'custom_button.dart';
 import 'remote_avatar.dart';
@@ -22,6 +23,7 @@ class UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       child: Padding(
@@ -81,7 +83,7 @@ class UserCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: CustomButton(
-                label: 'Voir',
+                label: l10n.viewAction,
                 isOutlined: true,
                 isSmall: true,
                 onPressed: onTap ?? () {},
