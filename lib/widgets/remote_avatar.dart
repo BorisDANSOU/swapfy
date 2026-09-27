@@ -6,12 +6,14 @@ class RemoteAvatar extends StatelessWidget {
   final String imageUrl;
   final String name;
   final double radius;
+  final Object? cacheManager;
 
   const RemoteAvatar({
     super.key,
     required this.imageUrl,
     required this.name,
     this.radius = 24,
+    this.cacheManager,
   });
 
   @override
@@ -42,6 +44,7 @@ class RemoteAvatar extends StatelessWidget {
             memCacheWidth: cacheDimension,
             memCacheHeight: cacheDimension,
             fit: BoxFit.cover,
+            cacheManager: cacheManager as dynamic,
             placeholder: (context, url) => const SizedBox(
               width: 18,
               height: 18,

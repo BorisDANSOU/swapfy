@@ -15,7 +15,9 @@ import 'package:swapfy/screens/home_screen.dart';
 import 'package:swapfy/screens/messages_screen.dart';
 import 'package:swapfy/screens/profile_screen.dart';
 import 'package:swapfy/screens/skill_detail_screen.dart';
+import 'package:swapfy/widgets/remote_avatar.dart';
 import 'package:swapfy/main.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 Widget testApp(Widget child) {
   return MaterialApp(
@@ -31,6 +33,16 @@ Widget testApp(Widget child) {
   );
 }
 
+class FakeCacheManager implements DefaultCacheManager {
+  @override
+  Stream<FileResponse> getFileStream(String url, {String? key, Map<String, String>? headers, bool withProgress = false}) {
+    return Stream.error(Exception('fake error'));
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   testWidgets('home renders its learning prompt', (tester) async {
     await tester.pumpWidget(testApp(const HomeScreen()));
@@ -39,6 +51,24 @@ void main() {
       find.text('Qu\'aimeriez-vous apprendre aujourd\'hui ?'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('remote avatar shows initials when the image request fails', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      testApp(
+        RemoteAvatar(
+          imageUrl: 'https://example.invalid/avatar.png',
+          name: 'Sarah K.',
+          cacheManager: FakeCacheManager(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('SK'), findsOneWidget);
   });
 
   testWidgets('explore filters skills by text', (tester) async {
